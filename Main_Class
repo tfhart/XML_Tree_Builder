@@ -1,0 +1,186 @@
+import processing.core.*;
+import processing.data.*;
+
+public class thart_Assmt01 extends PApplet
+{		
+	private XML data;
+	private boolean keyAlreadyPressed;
+	
+	public void loadBoxes(String filename)
+	{
+		data = loadXML(filename);
+		recursionLoop(data);
+	}
+	
+	private XML recursionLoop(XML node)
+	{ 
+		XML leafNode;
+		XML parentNode;
+		XML [] children = node.getChildren();
+		if (children.length > 0)
+		{
+			for (int i = 0; i < children.length; i++)
+			{
+				recursionLoop(children[i]);
+			}
+		}
+		if (node.getName() == "#text")
+		{
+			leafNode = node;
+			parentNode = leafNode.getParent();
+			parentNode.removeChild(leafNode);
+			return parentNode;
+		}	
+		return node;
+	}
+		
+	public void drawBoxes(XML xml, int x, int y)
+	{
+		recursionDraw(xml, x, y);
+	}
+	
+	private XML recursionDraw(XML root, int x, int y)
+	{
+		XML [] children = root.getChildren();
+		if (children.length > 0)
+		{
+			y = y + root.getInt("y");
+			x = x + root.getInt("x");
+			for (int i = 0; i < children.length; i++)
+			{
+				recursionDraw(children[i], x, y);
+			}
+		}
+		if (root.getName() == "box")
+		{
+			
+			rect(x, y, 20, 20);
+		}
+		return root;
+	}
+	
+	public void doubleMoves(XML xml)
+	{   
+		XML [] children = xml.getChildren();
+		XML root = xml;
+		
+		println(" ", xml.getChildCount());
+		println(" ", xml.getAttributeCount());
+		
+		if (children.length > 0)
+		{
+			for (int i = 0; i < children.length; i++)
+			{
+				doubleMoves(children[i]);
+				
+			}
+			if (xml.getName() == "move")
+			{
+				int y = root.getInt("y") * 2;
+				root.setInt("y", y);
+				
+				int x = root.getInt("x") * 2;
+				root.setInt("x", x);
+			}
+		}
+	}
+	
+	public void doubleBoxes(XML xml)
+	{
+		XML root = xml;
+		XML newchild1 = xml;
+		XML newchild2 = xml;
+		XML newchild3 = xml;
+		XML newchild4 = xml;
+		
+		XML leafNode;
+		XML parentNode;
+		XML [] children = root.getChildren();
+		if (children.length > 0)
+		{
+			for (int i = 0; i < children.length; i++)
+			{
+				doubleBoxes(children[i]);
+			}
+		}
+		if (root.getName() == "box")
+		{
+			leafNode = root;
+			parentNode = leafNode.getParent();
+			parentNode.removeChild(leafNode);
+			
+			newchild1 = parentNode.addChild("move");
+			newchild1.setInt("y", -10);
+			newchild1.setInt("x", -10);	
+			newchild1.addChild("box");
+			
+			newchild2 = parentNode.addChild("move");
+			newchild2.setInt("y", 10);
+			newchild2.setInt("x", -10);
+			newchild2.addChild("box");
+			
+			newchild3 = parentNode.addChild("move");
+			newchild3.setInt("y", -10);
+			newchild3.setInt("x", 10);	
+			newchild3.addChild("box");
+			
+			newchild4 = parentNode.addChild("move");
+			newchild4.setInt("y", 10);
+			newchild4.setInt("x", 10);	
+			newchild4.addChild("box");
+		}		
+	}
+	
+	// tie key press events to calling the functions above:
+	// 1 - loadBoxes
+	// 2 - drawBoxes
+	// 3 - doubleMoves
+	// 4 - doubleBoxes
+	public void draw()
+	{
+		if(keyPressed)
+		{
+			if(keyAlreadyPressed == false)
+			{
+				switch(key)
+				{
+				case '1':
+					loadBoxes("boxData.xml");
+					break;
+				case '2':
+					background( 255 );
+					drawBoxes(data, width/2, height/2);	
+					save("output.png");
+					break;
+				case '3':
+					doubleMoves(data);		
+					break;
+				case '4':
+					doubleBoxes(data);		
+					break;
+				}
+			}
+			keyAlreadyPressed = true;
+		}
+		else
+			keyAlreadyPressed = false;
+	}
+
+	// basic processing setup: window size and background color
+	public void setup()
+	{
+		size( 800, 600 );
+		background( 255 );
+		data = null;
+		keyAlreadyPressed = true;
+	}
+		
+	// run as an Application instead of as an Applet
+	public static void main(String[] args) 
+	{
+		String thisClassName = new Object(){}.getClass().getEnclosingClass().getName();
+		PApplet.main( new String[] { thisClassName } );
+	}
+}
+
+
